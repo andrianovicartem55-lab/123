@@ -1,0 +1,40 @@
+/* =========== © 2025 Centroarts.com - https://5play.org =========== */
+
+/* - PageNav - */
+.navigation {
+    user-select: none; margin-top: var(--sect-gap);
+    overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.navigation::-webkit-scrollbar { display: none; }
+
+@media (max-width: 991px) {
+    .navigation {
+        margin-left: calc(var(--wrp-p)/-1);
+        margin-right: calc(var(--wrp-p)/-1);
+        padding-left: var(--wrp-p);
+        padding-right: var(--wrp-p);
+    }
+}
+
+.pages-arrow > *, .pages-list > * {
+    padding: 8px; line-height: 24px; height: 40px; min-width: 40px;
+    white-space: nowrap; border-radius: 20px; text-align: center;
+}
+.pages-arrow > * {
+    display: flex; box-shadow: inset 0 0 0 1px hsla(var(--c-text), 0.1);
+}
+.pages-arrow .im { display: block; opacity: .8; }
+.pages-arrow + .pages-arrow { margin-left: 4px; }
+
+.pages-arrow > span .im { opacity: .3; }
+.pages-arrow > a { transition: box-shadow .2s ease; }
+.pages-arrow > a .im { transition: opacity .2s ease; }
+.pages-arrow > a:hover .im { opacity: 1; }
+.pages-arrow > a:hover { box-shadow: inset 0 0 0 1px hsla(var(--c-text), 0.2); }
+
+.pages-arrow + .pages-list { margin-left: 16px; }
+.pages-list { gap: 2px; }
+
+.pages-list > * { padding-left: 12px; padding-right: 12px; font-weight: var(--fw-bold); }
+.pages-list > span:not(.nav_ext) { background-color: hsla(var(--c-primary), 0.1); color: hsl(var(--c-second)); }
+.pages-list > a:hover { box-shadow: inset 0 0 0 1px hsla(var(--c-text), 0.1); }

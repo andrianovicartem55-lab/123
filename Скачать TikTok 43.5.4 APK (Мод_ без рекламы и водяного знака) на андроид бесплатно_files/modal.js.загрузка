@@ -1,0 +1,48 @@
+document.addEventListener('DOMContentLoaded', function () {
+    const modalOverlay = document.getElementById("modalOverlay");
+    const closeModal = document.getElementById("closeModal");
+    const dialogButtons = document.querySelectorAll(".dialog-btn");
+    const html = document.documentElement;
+
+    let isTextSelected = false;
+
+    function openModal() {
+        html.classList.add("modal-open");
+    }
+
+    function closeModalWindow() {
+        html.classList.remove("modal-open");
+        setTimeout(() => {
+            modalOverlay.style.display = "none";
+        }, 300);
+    }
+
+    dialogButtons.forEach(button => {
+        button.addEventListener("click", function (event) {
+            event.preventDefault();
+            modalOverlay.style.display = "block";
+            setTimeout(openModal, 10);
+        });
+    });
+
+    closeModal.addEventListener("click", closeModalWindow);
+
+    document.addEventListener("mousedown", () => isTextSelected = false);
+    document.addEventListener("mouseup", () => {
+        if (window.getSelection().toString().length > 0) {
+            isTextSelected = true;
+        }
+    });
+
+    modalOverlay.addEventListener("click", function (event) {
+        if (event.target === modalOverlay && !isTextSelected) {
+            closeModalWindow();
+        }
+    });
+    
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeModalWindow();
+        }
+    });
+});

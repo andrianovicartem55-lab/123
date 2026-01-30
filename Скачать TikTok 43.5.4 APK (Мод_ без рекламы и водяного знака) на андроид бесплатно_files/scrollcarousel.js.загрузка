@@ -1,0 +1,58 @@
+(function () {
+    document.querySelectorAll('[data-scroll]').forEach(container => {
+        const track = container.querySelector('.hcarousel');
+        const prevBtn = container.querySelector('.scroll-button.prev');
+        const nextBtn = container.querySelector('.scroll-button.next');
+
+        const updateButtons = () => {
+            const left = Math.round(track.scrollLeft);
+            const max = Math.round(track.scrollWidth - track.clientWidth);
+
+            prevBtn.classList.toggle('hidden', left <= 1);
+            nextBtn.classList.toggle('hidden', max <= 1 || left >= max - 1);
+        };
+
+        const clampOnResize = () => {
+            const max = track.scrollWidth - track.clientWidth;
+            if (track.scrollLeft > max) track.scrollLeft = max;
+            updateButtons();
+        };
+
+        const scrollByPage = dir => {
+            const step = track.clientWidth;
+            track.scrollLeft += dir === 'next' ? step : -step;
+        };
+
+        track.addEventListener('scroll', updateButtons);
+        nextBtn.addEventListener('click', () => scrollByPage('next'));
+        prevBtn.addEventListener('click', () => scrollByPage('prev'));
+        window.addEventListener('resize', clampOnResize);
+
+        const imgs = track.querySelectorAll('img');
+        let loaded = 0;
+
+        const checkAfterLoad = () => {
+            loaded++;
+            if (loaded === imgs.length) {
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(updateButtons);
+                });
+            }
+        };
+
+        if (imgs.length === 0) {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(updateButtons);
+            });
+        } else {
+            imgs.forEach(img => {
+                if (img.complete) {
+                    checkAfterLoad();
+                } else {
+                    img.addEventListener('load', checkAfterLoad);
+                    img.addEventListener('error', checkAfterLoad);
+                }
+            });
+        }
+    });
+})();

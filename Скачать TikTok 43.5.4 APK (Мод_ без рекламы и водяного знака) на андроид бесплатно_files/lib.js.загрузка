@@ -1,0 +1,128 @@
+document.addEventListener('DOMContentLoaded', () => {
+	const hTools = document.getElementById('header-tools');
+	const onScroll = () => {
+		const headerTop = hTools.getBoundingClientRect().top;
+		if (headerTop <= 0) {
+			hTools.classList.add('scrolled');
+		} else {
+			hTools.classList.remove('scrolled');
+		}
+	};
+	window.addEventListener('scroll', onScroll);
+	onScroll(); 
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    // === Search Header ===
+    document.querySelectorAll('.qs-toggle').forEach(button => {
+        button.addEventListener('click', event => {
+            event.preventDefault();
+
+            const form = document.getElementById('qs-form');
+            const headerTools = document.getElementById('header-tools');
+            const html = document.documentElement;
+            const input = form?.querySelector('.qs-input');
+
+            if (!form || !headerTools || !html || !input) return;
+            const isOpen = headerTools.classList.contains('searchopen');
+
+            if (isOpen) {
+                headerTools.classList.remove('searchopen');
+                html.classList.remove('qs');
+                input.blur();
+                setTimeout(() => {
+                    form.style.display = 'none';
+                }, 100);
+            } else {
+                form.style.display = '';
+                input.focus(); // 👉 Вызов без задержки, сразу после отображения
+                html.classList.add('qs');
+                setTimeout(() => {
+                    headerTools.classList.add('searchopen');
+                }, 50);
+            }
+        });
+    });
+
+    // === Mobile Menu ===
+    const menuBtn = document.getElementById('mmenu-btn');
+    const menuClose = document.getElementById('mmenu-close');
+    const menuPanel = document.getElementById('mobilemenu');
+    const html = document.documentElement;
+
+    menuBtn.addEventListener('click', () => {
+        menuPanel.style.display = 'block';
+        menuClose.style.display = 'block';
+
+        setTimeout(() => { html.classList.add('mo'); }, 100);
+
+        if (!document.querySelector('.mobile-menu-overlay')) {
+            const overlay = document.createElement('div');
+            overlay.className = 'mobile-menu-overlay';
+            document.body.appendChild(overlay);
+
+            overlay.addEventListener('click', closeMenu);
+        }
+    });
+
+    const closeMenu = () => {
+        menuPanel.style.display = 'none';
+        menuClose.style.display = 'none';
+        html.classList.remove('mo');
+
+        const overlay = document.querySelector('.mobile-menu-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+    };
+
+    menuClose.addEventListener('click', closeMenu);
+
+    // === Dropdown ===
+    document.querySelectorAll(".dropdown-btn").forEach(function (btn) {
+        btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+
+        const parent = btn.closest(".dropdown");
+        const box = parent.querySelector(".dropdown-box");
+
+        if (parent.classList.contains("open")) {
+            closeAllDropdowns();
+            return;
+        }
+
+        closeAllDropdowns();
+
+        box.style.removeProperty("display");
+            setTimeout(() => {
+                parent.classList.add("open");
+            }, 10);
+        });
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!e.target.closest(".dropdown")) {
+            closeAllDropdowns();
+        }
+    });
+
+    function closeAllDropdowns() {
+        document.querySelectorAll(".dropdown").forEach(function (dropdown) {
+        const box = dropdown.querySelector(".dropdown-box");
+            if (box) box.style.display = "none";
+            dropdown.classList.remove("open");
+        });
+    }
+
+    // === Scroll Up Button ===
+    const scrollUpButton = document.getElementById('scroll-up');
+        if (scrollUpButton) {
+        scrollUpButton.addEventListener('click', function (event) {
+            event.preventDefault();
+            window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+            });
+        });
+    }
+});
