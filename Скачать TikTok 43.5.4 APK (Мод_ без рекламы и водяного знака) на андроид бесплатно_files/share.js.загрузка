@@ -1,0 +1,56 @@
+document.addEventListener("DOMContentLoaded", function () {
+    const shareWrapper = document.querySelector(".sharefunc");
+    const shareBtn = document.getElementById("share-btn");
+
+    const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent);
+
+    if (shareWrapper && shareBtn && navigator.share && isMobile) {
+        shareWrapper.classList.add("native");
+
+        shareBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
+            const title = shareBtn.getAttribute("data-share-title") || document.title;
+            const text = shareBtn.getAttribute("data-share-text") || "";
+            const url = window.location.href;
+
+            navigator.share({
+                title,
+                text,
+                url
+            }).catch((err) => {
+                console.warn('Ошибка при использовании share:', err);
+            });
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+	document.querySelectorAll('.share-btn').forEach(button => {
+		button.addEventListener('click', event => {
+			event.preventDefault();
+			const href = button.href;
+
+			const w = 500;
+			const h = 500;
+			const left = Math.max(0, (window.innerWidth - w) / 2 + window.screenX);
+			const top = Math.max(0, (window.innerHeight - h) / 2 + window.screenY);
+
+			const myWindow = window.open(
+				href,
+				'myWindow',
+				`scrollbars=1,height=${Math.min(h, screen.availHeight)},width=${Math.min(w, screen.availWidth)},left=${left},top=${top}`
+			);
+
+			if (myWindow) {
+				if (myWindow.screenY >= (screen.availHeight - myWindow.outerHeight)) {
+					myWindow.moveTo(myWindow.screenX, screen.availHeight - myWindow.outerHeight);
+				}
+				if (myWindow.screenX >= (screen.availWidth - myWindow.outerWidth)) {
+					myWindow.moveTo(screen.availWidth - myWindow.outerWidth, myWindow.screenY);
+				}
+			}
+		});
+	});
+});

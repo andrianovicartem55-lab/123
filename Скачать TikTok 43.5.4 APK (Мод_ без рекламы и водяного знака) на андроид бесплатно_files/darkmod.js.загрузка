@@ -1,0 +1,18 @@
+(function() {
+    const userPreference = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (userPreference === 'dark' || (!userPreference && systemPrefersDark)) {
+        document.documentElement.classList.add('darkmod');
+    }
+})();
+document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('mod-toggle');
+
+    if (toggle) {
+        toggle.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('darkmod');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+    }
+});
