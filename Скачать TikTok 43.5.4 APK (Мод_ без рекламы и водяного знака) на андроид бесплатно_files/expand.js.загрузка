@@ -1,8 +1,0 @@
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.expand .expand-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            const container = button.closest('.expand');
-            container.classList.toggle('open');
-        });
-    });
-});
